@@ -5,7 +5,7 @@ import numpy as np
 
 # Load map image
 project_folder = os.path.abspath(os.path.dirname(__file__))
-image_path = os.path.join(project_folder, 'maps', 'map8.png')
+image_path = os.path.join(project_folder, 'maps', 'map11.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
