@@ -5,7 +5,7 @@ import numpy as np
 
 # Load map image
 project_folder = os.path.abspath(os.path.dirname(__file__))
-image_path = os.path.join(project_folder, 'maps', 'map6.png')
+image_path = os.path.join(project_folder, 'maps', 'map8.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
@@ -49,8 +49,8 @@ for i in range (0,len(building_info),1):
 ### PyVista 3D Visualization
 
 # Create Map Plane
-# map = pyvista.Plane(center=(0.5, 0.5, 0), i_size=1, j_size=image.shape[0] / image.shape[1], i_resolution=20, j_resolution=20)
-map = pyvista.Plane(center=(image.shape[0]/2,image.shape[1]/2, 0), i_size=image.shape[0], j_size=image.shape[1])
+map = pyvista.Plane(center=(0.5, 0.5, 0), i_size=1, j_size=image.shape[0] / image.shape[1], i_resolution=20, j_resolution=20)
+# map = pyvista.Plane(center=(image.shape[0]/2,image.shape[1]/2, 0), i_size=image.shape[0], j_size=image.shape[1])
 
 
 modelBuildings = []
