@@ -11,7 +11,7 @@ image = cv2.imread(image_path)
 # Convert the image to grayscale
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-# Threshold the image to create a binary image
+# Threshold the image to create a binary image. Ignore first return value "threshold value" with _ placeholder, store second return value "thresholded image" in "binary" variable. 
 _, binary = cv2.threshold(gray, 240, 255, cv2.THRESH_BINARY_INV)
 
 # Find contours in the binary image
@@ -23,8 +23,6 @@ building_info = []
 for i in range (len(contours)-1,-1,-1):
     # Get the bounding rectangle for the contour
     x, y, w, h = cv2.boundingRect(contours[i])
-    print('test1')
-    print('')
     # Append the top-left corner of the bounding rectangle to the list
     building_info.append((x, y, w, h))
 
@@ -94,3 +92,24 @@ plotter = pyvista.Plotter(border= True, border_width= 50, border_color= 'plum', 
 plotter.add_mesh(merged, show_edges=True, line_width=3)
 plotter.show_grid()
 plotter.show()
+
+
+
+
+
+
+
+# # view the scene in isometric perspective
+# plotter.view_isometric()
+
+# def rotate():
+#     plotter.camera.azimuth(1)
+
+# # add a callback function that rotates the camera and update the render window
+# callback_id = plotter.add_callback(rotate, interval=100)
+
+# # show the result in notebook
+# plotter.show()
+
+# # when done, you can remove the callback if you want
+# plotter.remove_callback(callback_id)
