@@ -2,10 +2,13 @@ import os
 import pyvista
 import cv2
 import numpy as np
+import pytesseract
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Load map image
 project_folder = os.path.abspath(os.path.dirname(__file__))
-image_path = os.path.join(project_folder, 'maps', 'map13.png')
+image_path = os.path.join(project_folder, 'maps', 'map15.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
@@ -17,6 +20,8 @@ _, binary = cv2.threshold(gray, 240, 255, cv2.THRESH_BINARY_INV)
 # Find contours in the binary image
 contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+cv2.imshow('Grayscale Image', gray) # TEST
+cv2.imshow('Grayscale Image', image) # TEST
 # Iterate contours, append into building_info
 building_info = []
 
@@ -36,10 +41,32 @@ for i in range (0,len(building_info),1):
     print('--------------------')
     print('Building ' + str(i+1) + ': ')
     print('Coordinates: (' + str(int(building_info[i][0])) + ',' + str(int(building_info[i][1])) +')')
+    # Crop the image to the area of the building
+    cropped = image[int(building_info[i][0]-building_info[i][3]/1.5):int(building_info[i][0]+building_info[i][3]), int(building_info[i][1]-building_info[i][2]/1.5):int(building_info[i][1]+building_info[i][2])]
+    resized = cv2.resize(cropped, None, fx=20, fy=20, interpolation=cv2.INTER_CUBIC)
+    # Recognize the text from the cropped image
+    text = pytesseract.image_to_string(resized, config='--psm 6 digits')
+    print(f"Building at ({int(building_info[i][0])}, {int(building_info[i][1])}) has number: {text}")
+    cv2.imshow('Grayscale Image', resized)
+
+
     #print('Height: ' + str(building_info[i][3]))
 
 
-
+# ## Tesseract OCR
+# for pos in building_info:
+#     x_coord = pos[1] 
+#     y_coord = pos[0]
+#     building_width = pos[2]
+#     building_height = pos[3]
+    
+#     # Crop the image to the area of the building
+#     cropped = image[int(y_coord-building_height/1.5):int(y_coord+building_height), int(x_coord-building_width/1.5):int(x_coord+building_width)]
+#     resized = cv2.resize(cropped, None, fx=20, fy=20, interpolation=cv2.INTER_CUBIC)
+#     # Recognize the text from the cropped image
+#     text = pytesseract.image_to_string(resized, config='--psm 6 digits')
+#     print(f"Building at ({x_coord}, {y_coord}) has number: {text}")
+#     cv2.imshow('Grayscale Image', resized)
 
 
 
