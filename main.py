@@ -5,7 +5,7 @@ import numpy as np
 
 # Load map image
 project_folder = os.path.abspath(os.path.dirname(__file__))
-image_path = os.path.join(project_folder, 'maps', 'map11.png')
+image_path = os.path.join(project_folder, 'maps', 'map13.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
@@ -31,15 +31,12 @@ for i in range (len(contours)-1,-1,-1):
 
 # Print the starting positions of buildings
 print('-------------------------------------------------------------------------------------------------------------\n' + str(building_info) + '\n')
-
 print('Map Dimension: ' + str(image.shape[0]) + 'x'+ str(image.shape[1]))
-
 for i in range (0,len(building_info),1):
     print('--------------------')
     print('Building ' + str(i+1) + ': ')
-    print('Coordinates: (' + str(building_info[i][0]) + ',' + str(building_info[i][1]) +')')
-    print('Width: ' + str(building_info[i][2]))
-    print('Height: ' + str(building_info[i][3]))
+    print('Coordinates: (' + str(int(building_info[i][0])) + ',' + str(int(building_info[i][1])) +')')
+    #print('Height: ' + str(building_info[i][3]))
 
 
 
@@ -47,55 +44,64 @@ for i in range (0,len(building_info),1):
 
 
 ### PyVista 3D Visualization
-
-# Create Map Plane
-# map = pyvista.Plane(center=(0.5, 0.5, 0), i_size=1, j_size=image.shape[0] / image.shape[1], i_resolution=20, j_resolution=20)
-
-# map = pyvista.Plane(center=(image.shape[0]/2,image.shape[1]/2, 0), i_size=image.shape[0], j_size=image.shape[1])
-
+theme = pyvista.themes.DefaultTheme()
+theme.background = 'dimgrey'
+theme.color = 'plum'
+theme.edge_color = 'white'
+theme.render_points_as_spheres = True
+plotter = pyvista.Plotter(border= True, border_width= 50, border_color= 'plum', line_smoothing= True, polygon_smoothing= True, lighting= 'light kit', theme= theme)
 
 map = pyvista.Plane(center=(image.shape[0]/2, image.shape[1]/2, 0), i_size=image.shape[0], j_size=image.shape[1],i_resolution=image.shape[0], j_resolution=image.shape[1])
 
 
 modelBuildings = []
+labels = []
+points = []
+counter = 0
 for pos in building_info:
-    # x_coord = pos[0] / (image.shape[1]) * (image.shape[0] / image.shape[1])
-    # y_coord = (image.shape[0] - pos[1]) / (image.shape[0])
-
-
-
+    counter += 1
     x_coord = pos[1] 
-    y_coord = pos[0] 
-
-
-
+    y_coord = pos[0]
     building_height = pos[3]
     building_width = pos[3]
     building_length = pos[3]
     
-    modelBuildings.append(pyvista.Cube(x_length=building_width, y_length=building_length, 
-    z_length=building_height, center=(x_coord,y_coord, building_height/2)))
-    #z_length=building_height, center=(x_coord-image.shape[0]/2,y_coord-image.shape[1]/2, building_height/2)))
-    #modelBuildings.append(modelBuildings.pop().rotate_x(90))
+    #modelBuildings.append(pyvista.Cube( x_length=building_width, y_length=building_length, z_length=building_height, center=(x_coord,y_coord, building_height/2) ))
+    modelBuildings.append(pyvista.Cylinder(radius = building_width/2, height= building_height, direction = (0,0,1), center=(x_coord,y_coord, building_height/2)))
+    label_text = f"Building {counter}: \n({int(x_coord)}, {int(y_coord)})"
+    labels.append((label_text))
+    points.append((x_coord-building_width/6, y_coord+building_length/6, building_height*1.5))
+    modelBuildings.append(pyvista.Line(pointa=(x_coord, y_coord, building_height), pointb=(x_coord-building_width/6, y_coord+building_length/6, building_height*1.5), resolution=1))
 
-#TEST
-#modelBuildings.append(pyvista.Cube(x_length=1, y_length=1, z_length=1, center=(0,0,0)))
+
+
 
 merged = map.merge(modelBuildings)
-merged.rotate_x(270)
-merged.rotate_y(270)
-merged.rotate_z(270)
-#merged.plot(show_edges=True, line_width=5)
+# merged.rotate_x(270)
+# merged.rotate_y(270)
+# merged.rotate_z(270)
 
 
-theme = pyvista.themes.DefaultTheme()
-theme.background = 'black'
-theme.color = 'plum'
-theme.edge_color = 'white'
-theme.render_points_as_spheres = True
 
-plotter = pyvista.Plotter(border= True, border_width= 50, border_color= 'plum', line_smoothing= True, polygon_smoothing= True, lighting= 'light kit', theme= theme)
-plotter.add_mesh(merged, show_edges=True, line_width=3)
+
+
+#labels = ['Point A', 'Point B', 'Point C']
+actor = plotter.add_point_labels(
+    points,
+    labels,
+    italic=False,
+    font_size=10,
+    point_color='red',
+    point_size=1,
+    render_points_as_spheres=True,
+    always_visible=True,
+    shadow=True,
+)
+#plotter.camera_position = 'xy'
+
+plotter.enable_anti_aliasing('ssaa')
+_ = plotter.add_axes(line_width=5, labels_off=True)
+plotter.add_mesh(merged, show_edges=True, line_width=1, smooth_shading= True)
 plotter.show_grid()
 plotter.show()
 
@@ -104,7 +110,7 @@ plotter.show()
 
 
 
-
+# ---Rotate Test Start---
 # # view the scene in isometric perspective
 # plotter.view_isometric()
 
@@ -119,3 +125,4 @@ plotter.show()
 
 # # when done, you can remove the callback if you want
 # plotter.remove_callback(callback_id)
+# --- Rotate Test End --- 
