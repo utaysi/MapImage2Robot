@@ -118,7 +118,8 @@ plotter.enable_anti_aliasing('ssaa')
 _ = plotter.add_axes(line_width=5, labels_off=True)
 plotter.add_mesh(merged, show_edges=True, line_width=1, smooth_shading= True)
 plotter.show_grid()
-plotter.show()
+
+plotter.show(auto_close= True)
 
 
 
