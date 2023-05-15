@@ -7,6 +7,7 @@
 
 ## Current Todo: 
 
+- [MISC] Maybe add auto 3d rotation gif/mp4 from test.py
 - [FIX] Color reading. Currently getting blue/black instead of red. WHY?!
 - [FIX] Building order of text output and 3D doesn't currently match. Fix text output building order.
 - ~~[DONE-optimize?] Fix 3D Visualization Scaling~~
