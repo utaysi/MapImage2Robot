@@ -51,23 +51,6 @@ for i in range (0,len(building_info),1):
     cv2.imshow('Grayscale Image', resized)
 
 
-# ## Tesseract OCR
-# for pos in building_info:
-#     x_coord = pos[1] 
-#     y_coord = pos[0]
-#     building_width = pos[2]
-#     building_height = pos[3]
-    
-#     # Crop the image to the area of the building
-#     cropped = image[int(y_coord-building_height/1.5):int(y_coord+building_height), int(x_coord-building_width/1.5):int(x_coord+building_width)]
-#     resized = cv2.resize(cropped, None, fx=20, fy=20, interpolation=cv2.INTER_CUBIC)
-#     # Recognize the text from the cropped image
-#     text = pytesseract.image_to_string(resized, config='--psm 6 digits')
-#     print(f"Building at ({x_coord}, {y_coord}) has number: {text}")
-#     cv2.imshow('Grayscale Image', resized)
-
-
-
 ### PyVista 3D Visualization
 theme = pyvista.themes.DefaultTheme()
 theme.background = 'dimgrey'
