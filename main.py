@@ -3,8 +3,22 @@ import pyvista
 import cv2
 import numpy as np
 import pytesseract
+import webcolors
+
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+def closest_color(requested_color):
+    min_colors = {}
+    for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
+        r_c, g_c, b_c = webcolors.hex_to_rgb(key)
+        rd = (r_c - requested_color[0]) ** 2
+        gd = (g_c - requested_color[1]) ** 2
+        bd = (b_c - requested_color[2]) ** 2
+        min_colors[(rd + gd + bd)] = name
+    return min_colors[min(min_colors.keys())]
+
+
 
 # Load map image
 project_folder = os.path.abspath(os.path.dirname(__file__))
@@ -49,6 +63,9 @@ for i in range (0,len(building_info),1):
     building_info[i].append(int(text))
     print(f"Height: {building_info[i][4]}")
     cv2.imshow('Grayscale Image', resized)
+    #pixel_color = (image[int(building_info[i][0]-int(building_info[i][2]/2)),int(building_info[i][1])])
+    pixel_color = (image[int(building_info[i][0]+2),int(building_info[i][1])])
+    print(closest_color(pixel_color))
 
 
 ### PyVista 3D Visualization

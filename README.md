@@ -7,6 +7,7 @@
 
 ## Current Todo: 
 
+- [FIX] Color reading. Currently getting blue/black instead of red. WHY?!
 - [FIX] Building order of text output and 3D doesn't currently match. Fix text output building order.
 - ~~[DONE-optimize?] Fix 3D Visualization Scaling~~
 - ~~[DONE] Make sure all variables are linked to map input variables and not constants on final working version~~
