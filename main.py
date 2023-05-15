@@ -31,7 +31,7 @@ for i in range (len(contours)-1,-1,-1):
     center_x = x + w/2
     center_y = y + h/2
     # Append the top-left corner of the bounding rectangle to the list
-    building_info.append((center_x, center_y, w, h))
+    building_info.append([center_x, center_y, w, h])
 
 
 # Print the starting positions of buildings
@@ -46,11 +46,9 @@ for i in range (0,len(building_info),1):
     resized = cv2.resize(cropped, None, fx=20, fy=20, interpolation=cv2.INTER_CUBIC)
     # Recognize the text from the cropped image
     text = pytesseract.image_to_string(resized, config='--psm 6 digits')
-    print(f"Building at ({int(building_info[i][0])}, {int(building_info[i][1])}) has number: {text}")
+    building_info[i].append(int(text))
+    print(f"Height: {building_info[i][4]}")
     cv2.imshow('Grayscale Image', resized)
-
-
-    #print('Height: ' + str(building_info[i][3]))
 
 
 # ## Tesseract OCR
@@ -89,8 +87,8 @@ for pos in building_info:
     counter += 1
     x_coord = pos[1] 
     y_coord = pos[0]
-    building_height = pos[3]
-    building_width = pos[3]
+    building_height = pos[4]*7.5
+    building_width = pos[2]
     building_length = pos[3]
     
     #modelBuildings.append(pyvista.Cube( x_length=building_width, y_length=building_length, z_length=building_height, center=(x_coord,y_coord, building_height/2) ))
@@ -112,19 +110,9 @@ merged = map.merge(modelBuildings)
 
 
 
-#labels = ['Point A', 'Point B', 'Point C']
-actor = plotter.add_point_labels(
-    points,
-    labels,
-    italic=False,
-    font_size=10,
-    point_color='red',
-    point_size=1,
-    render_points_as_spheres=True,
-    always_visible=True,
-    shadow=True,
-)
-#plotter.camera_position = 'xy'
+
+actor = plotter.add_point_labels(points,labels,italic=False,font_size=10,point_color='red',point_size=1,render_points_as_spheres=True,always_visible=True,shadow=True)
+#plotter.camera_position = 'iso'
 
 plotter.enable_anti_aliasing('ssaa')
 _ = plotter.add_axes(line_width=5, labels_off=True)
