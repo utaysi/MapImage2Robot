@@ -15,3 +15,7 @@
 - ~~[DONE-double_check_variations_for_scaling] Switch to 150x150 map with 7x7 buildings~~
 - Add exlusion zone in the middle and change input maps accordingly after getting exact zone coords from Zeynep
 - ~~[DONE] Add OCR to initial image processing~~
+
+## Unfinished Screenshots 
+
+![Screenshot](screenshots/1.png)
