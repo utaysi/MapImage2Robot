@@ -14,7 +14,7 @@ def get_point_on_circle(center, radius, angle_deg):
 # usage example:
 center = (75, 75)  # center of the circle
 radius = 52.5  # radius of the circle
-angle = 185  # angle in degrees
+angle = 331  # angle in degrees
 
 point = get_point_on_circle(center, radius, angle)
 photoshop_point = (point[0]*10, point[1]*10)
