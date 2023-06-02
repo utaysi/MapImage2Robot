@@ -24,7 +24,7 @@ def closest_color(requested_color):
 project_folder = os.path.abspath(os.path.dirname(__file__))
 output_folder = os.path.join(project_folder, 'output_images')
 os.makedirs(output_folder, exist_ok=True)
-image_path = os.path.join(project_folder, 'maps', 'map17.png')
+image_path = os.path.join(project_folder, 'maps', 'map18.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
@@ -75,7 +75,7 @@ for i in range (0,len(building_info),1):
     cv2.imwrite(filename, cropped)
 
     #pixel_color = (image[int(building_info[i][0]-int(building_info[i][2]/2)),int(building_info[i][1])])
-    pixel_color_BGR = (image[int(building_info[i][0]-building_info[i][2]/2),int(building_info[i][1])])
+    pixel_color_BGR = (image[int(building_info[i][1]), int(building_info[i][0]-building_info[i][2]/2)])
     pixel_color = pixel_color_BGR[::-1] # reverse the order of channels, making it RGB
     print(pixel_color)
     print(closest_color(pixel_color))
