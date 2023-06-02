@@ -22,7 +22,9 @@ def closest_color(requested_color):
 
 # Load map image
 project_folder = os.path.abspath(os.path.dirname(__file__))
-image_path = os.path.join(project_folder, 'maps', 'map15.png')
+output_folder = os.path.join(project_folder, 'output_images')
+os.makedirs(output_folder, exist_ok=True)
+image_path = os.path.join(project_folder, 'maps', 'map17.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
@@ -56,16 +58,28 @@ for i in range (0,len(building_info),1):
     print('Building ' + str(i+1) + ': ')
     print('Coordinates: (' + str(int(building_info[i][0])) + ',' + str(int(building_info[i][1])) +')')
     # Crop the image to the area of the building
-    cropped = image[int(building_info[i][0]-building_info[i][3]/1.5):int(building_info[i][0]+building_info[i][3]), int(building_info[i][1]-building_info[i][2]/1.5):int(building_info[i][1]+building_info[i][2])]
-    resized = cv2.resize(cropped, None, fx=20, fy=20, interpolation=cv2.INTER_CUBIC)
-    # Recognize the text from the cropped image
-    text = pytesseract.image_to_string(resized, config='--psm 6 digits')
-    building_info[i].append(int(text))
+    cropped = image[int(building_info[i][1]-building_info[i][3]/2):int(building_info[i][1]+building_info[i][3]/2), int(building_info[i][0]-building_info[i][2]/2):int(building_info[i][0]+building_info[i][2]/2)]
+    #resized = cv2.resize(cropped, None, fx=20, fy=20, interpolation=cv2.INTER_CUBIC)
+    #Recognize the text from the cropped image
+    text = pytesseract.image_to_string(cropped, config='--psm 7 digits')
+    #Add found text with OCR to building_info
+    try:
+        building_info[i].append(int(text))
+    except ValueError:
+        building_info[i].append(0)
+    
     print(f"Height: {building_info[i][4]}")
-    cv2.imshow('Grayscale Image', resized)
+
+    #cv2.imshow('Grayscale Image', cropped)
+    filename = os.path.join(output_folder, f'building_{i+1}.png')
+    cv2.imwrite(filename, cropped)
+
     #pixel_color = (image[int(building_info[i][0]-int(building_info[i][2]/2)),int(building_info[i][1])])
-    pixel_color = (image[int(building_info[i][0]+2),int(building_info[i][1])])
+    pixel_color_BGR = (image[int(building_info[i][0]-building_info[i][2]/2),int(building_info[i][1])])
+    pixel_color = pixel_color_BGR[::-1] # reverse the order of channels, making it RGB
+    print(pixel_color)
     print(closest_color(pixel_color))
+    #cv2.imshow('Grayscale Image', pixel_color)
 
 
 ### PyVista 3D Visualization
