@@ -26,7 +26,7 @@ def closest_color(requested_color):
 project_folder = os.path.abspath(os.path.dirname(__file__))
 output_folder = os.path.join(project_folder, 'output_images')
 os.makedirs(output_folder, exist_ok=True)
-image_path = os.path.join(project_folder, 'maps', 'map19.png')
+image_path = os.path.join(project_folder, 'maps', 'map27.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale

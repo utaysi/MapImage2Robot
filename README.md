@@ -10,7 +10,7 @@
 - Implement Arduino stuff
 
 
-- [MISC] Maybe add auto 3d rotation gif/mp4 from test.py (https://docs.pyvista.org/version/stable/api/plotting/_autosummary/pyvista.Plotter.generate_orbital_path.html) (also check next items from Plotter wiki)
+- [DONE] Add auto 3d rotation gif
 - [FIX] Building order of text output and 3D doesn't currently match. Fix text output building order.
 
 
