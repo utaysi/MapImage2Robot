@@ -76,7 +76,7 @@ for i in range (0,len(building_info),1):
     cv2.imwrite(filename, cropped)
 
     #pixel_color = (image[int(building_info[i][0]-int(building_info[i][2]/2)),int(building_info[i][1])])
-    pixel_color_BGR = (image[int(building_info[i][1]), int(building_info[i][0]-building_info[i][2]/2)])
+    pixel_color_BGR = (image[int(building_info[i][1]), int(building_info[i][0]-building_info[i][2]/2.5)])
     pixel_color = pixel_color_BGR[::-1] # reverse the order of channels, making it RGB
     building_info[i].append(pixel_color)
     print(pixel_color)
@@ -122,8 +122,8 @@ theme.background = 'dimgrey'
 theme.color = 'plum'
 theme.edge_color = 'white'
 theme.render_points_as_spheres = True
-plotter = pyvista.Plotter(border= True, border_width= 50, border_color= 'plum', line_smoothing= True, polygon_smoothing= True, lighting= 'light kit', theme= theme)
 
+plotter = pyvista.Plotter(border= True, border_width= 50, border_color= 'plum', line_smoothing= True, polygon_smoothing= True, lighting= 'light kit', theme= theme)
 map = pyvista.Plane(center=(image.shape[0]/2, image.shape[1]/2, 0), i_size=image.shape[0], j_size=image.shape[1],i_resolution=image.shape[0], j_resolution=image.shape[1])
 
 
@@ -140,13 +140,21 @@ for pos in building_info:
     building_width = pos[2]
     building_length = pos[2]
     
-    #modelBuildings.append(pyvista.Cube( x_length=building_width, y_length=building_length, z_length=building_height, center=(x_coord,y_coord, building_height/2) ))
-    modelBuildings.append(pyvista.Cylinder(radius = building_width/2, height= building_height, direction = (0,0,1), center=(x_coord,y_coord, building_height/2)))
-    label_text = f"Building {counter}: \n({int(y_coord)}, {int(x_coord)})"
+    
+    building = pyvista.Cylinder(radius = building_width/2, height= building_height, direction = (0,0,1), center=(x_coord,y_coord, building_height/2))
+    
+    color = pos[4]
+    normalized_color = tuple([c/255 for c in color])  # normalize color values
+
+    # Add the building to the plotter with its color
+    plotter.add_mesh(building, color=normalized_color, show_edges=True, line_width=1, smooth_shading= True, show_scalar_bar=False)
+    
+    label_text = f"Building {counter}: \n({int(y_coord)}, {int(x_coord)}), \nH: {pos[3]}"
     labels.append((label_text))
     points.append((x_coord-building_width/6, y_coord+building_length/6, building_height*1.5))
-    modelBuildings.append(pyvista.Line(pointa=(x_coord, y_coord, building_height), pointb=(x_coord-building_width/6, y_coord+building_length/6, building_height*1.5), resolution=1))
-    color = pos[4]
+
+    line = pyvista.Line(pointa=(x_coord, y_coord, building_height), pointb=(x_coord-building_width/6, y_coord+building_length/6, building_height*1.5), resolution=1)
+    plotter.add_mesh(line, show_scalar_bar=False)
 
 
 
@@ -166,29 +174,32 @@ actor = plotter.add_point_labels(points,labels,italic=False,font_size=10,point_c
 
 plotter.enable_anti_aliasing('ssaa')
 _ = plotter.add_axes(line_width=5, labels_off=True)
-plotter.add_mesh(merged, show_edges=True, line_width=1, smooth_shading= True)
+plotter.add_mesh(merged, show_edges=True, line_width=1, smooth_shading= True, show_scalar_bar=False)
 plotter.show_grid()
 
-plotter.show(auto_close= True)
 
-
-
-
-
-
-# ---Rotate Test Start---
-# # view the scene in isometric perspective
-# plotter.view_isometric()
-
-# def rotate():
-#     plotter.camera.azimuth(1)
-
-# # add a callback function that rotates the camera and update the render window
-# callback_id = plotter.add_callback(rotate, interval=100)
-
-# # show the result in notebook
-# plotter.show()
-
-# # when done, you can remove the callback if you want
-# plotter.remove_callback(callback_id)
-# --- Rotate Test End --- 
+print('\nChoose 3D Visualization Type: \n1- Freeview \n2- Rotation GIF (This takes around 30 seconds to render)')
+userchoice = input()
+if userchoice == '1':
+    plotter.show(auto_close= True)
+if userchoice == '2':
+    # Open a gif
+    plotter.open_gif("rotation.gif", fps=20)
+    # Determine the center of your map for the camera to orbit
+    orbit_center = map.center
+    # Define a vector for the camera position. This will be updated in the loop.
+    orbit_radius = 2*max(image.shape[0], image.shape[1])  # use the larger dimension of the image as the orbit radius
+    camera_position = [orbit_center[0], orbit_center[1], orbit_center[2] + orbit_radius * np.sqrt(2) / 2]
+    # Define the number of frames
+    nframe = 360  # 36 frames will result in 10 degrees per frame
+    # Rotate the camera and write a frame for each updated position
+    for i in range(nframe):
+        plotter.camera_position = [camera_position, orbit_center, [0, 0, 1]]  # sets camera position, focal point, and view up
+        plotter.render()  # render the scene
+        plotter.write_frame()  # write the frame
+        # Update the camera position for the next frame. This creates a 10 degree rotation per frame.
+        camera_position = [orbit_center[0] + orbit_radius * np.sin(np.radians(i * 1)), 
+                    orbit_center[1] - orbit_radius * np.cos(np.radians(i * 1)), 
+                    orbit_center[2] + orbit_radius * np.sqrt(2) / 2]
+    # Close and finalize the gif
+    plotter.close()
