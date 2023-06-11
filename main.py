@@ -26,7 +26,7 @@ def closest_color(requested_color):
 project_folder = os.path.abspath(os.path.dirname(__file__))
 output_folder = os.path.join(project_folder, 'output_images')
 os.makedirs(output_folder, exist_ok=True)
-image_path = os.path.join(project_folder, 'maps', 'map27.png')
+image_path = os.path.join(project_folder, 'maps', 'map1.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
@@ -60,7 +60,6 @@ for i in range (0,len(building_info),1):
     print('Coordinates: (' + str(int(building_info[i][0])) + ',' + str(int(building_info[i][1])) +')')
     # Crop the image to the area of the building
     cropped = image[int(building_info[i][1]-building_info[i][2]/2):int(building_info[i][1]+building_info[i][2]/2), int(building_info[i][0]-building_info[i][2]/2):int(building_info[i][0]+building_info[i][2]/2)]
-    #resized = cv2.resize(cropped, None, fx=20, fy=20, interpolation=cv2.INTER_CUBIC)
     #Recognize the text from the cropped image
     text = pytesseract.image_to_string(cropped, config='--psm 7 digits')
     #Add found text with OCR to building_info
@@ -71,11 +70,9 @@ for i in range (0,len(building_info),1):
     
     print(f"Height: {building_info[i][3]}")
 
-    #cv2.imshow('Grayscale Image', cropped)
     filename = os.path.join(output_folder, f'building_{i+1}.png')
     cv2.imwrite(filename, cropped)
 
-    #pixel_color = (image[int(building_info[i][0]-int(building_info[i][2]/2)),int(building_info[i][1])])
     pixel_color_BGR = (image[int(building_info[i][1]), int(building_info[i][0]-building_info[i][2]/2.5)])
     pixel_color = pixel_color_BGR[::-1] # reverse the order of channels, making it RGB
     building_info[i].append(pixel_color)
@@ -87,29 +84,37 @@ robot_output = []
 for i in building_info:
     robot_output.append((int(i[0]), int(i[1]), i[3]))
 
-# create a serial object
-ser = serial.Serial('COM5', 9600) # substitute 'COM3' with your Arduino's port
-#time.sleep(2)  # give the connection a second or two to establish                 #ENABLE AFTER DEVELOPING
+# -------OUTPUT: TEXT FILE----------
 
 # open text file in write mode to clear it
 with open("output.txt", "w") as f:
     pass
-
 # open text file in append mode
 with open("output.txt", "a") as f:
     for building in robot_output:
         # convert building info to a comma-separated string
         str_out = ','.join(map(str, building))
-        if ser.is_open:
-            # encode the string to bytes and send it over serial
-            ser.write((str_out + '\n').encode())
-            # write the same data to the text file
-            f.write(str_out + '\n')
-        else:
-            print("Serial connection is not open!")
+        # write the same data to the text file
+        f.write(str_out + '\n')
 
-# close the serial connection
-ser.close()
+# -------OUTPUT: ARDUINO SERIAL CONNECTION----------
+# Remove comments when Arduino Device is connected to the PC 
+
+# # create a serial object
+# ser = serial.Serial('COM5', 9600) 
+# time.sleep(2)  # give the connection a second or two to establish. 
+# for building in robot_output:
+#     # convert building info to a comma-separated string
+#     str_out = ','.join(map(str, building))
+#     if ser.is_open:
+#         # encode the string to bytes and send it over serial
+#         ser.write((str_out + '\n').encode())
+#     else:
+#         print("Serial connection is not open!")
+# # close the serial connection
+# ser.close()
+
+
 
 print('-------------------------------------------------------------------------------------------------------------\n' + str(building_info) + '\n')
 print('-------------------------------------------------------------------------------------------------------------\n' + str(robot_output) + '\n')
@@ -142,17 +147,14 @@ for pos in building_info:
     
     
     building = pyvista.Cylinder(radius = building_width/2, height= building_height, direction = (0,0,1), center=(x_coord,y_coord, building_height/2))
-    
     color = pos[4]
     normalized_color = tuple([c/255 for c in color])  # normalize color values
-
     # Add the building to the plotter with its color
-    plotter.add_mesh(building, color=normalized_color, show_edges=True, line_width=1, smooth_shading= True, show_scalar_bar=False)
+    plotter.add_mesh(building, color=normalized_color, show_edges=False, line_width=1, smooth_shading= True, show_scalar_bar=False)
     
     label_text = f"Building {counter}: \n({int(y_coord)}, {int(x_coord)}), \nH: {pos[3]}"
     labels.append((label_text))
     points.append((x_coord-building_width/6, y_coord+building_length/6, building_height*1.5))
-
     line = pyvista.Line(pointa=(x_coord, y_coord, building_height), pointb=(x_coord-building_width/6, y_coord+building_length/6, building_height*1.5), resolution=1)
     plotter.add_mesh(line, show_scalar_bar=False)
 
@@ -160,23 +162,13 @@ for pos in building_info:
 
 
 merged = map.merge(modelBuildings)
-# merged.rotate_x(270)
-# merged.rotate_y(270)
-# merged.rotate_z(270)
-
-
-
-
-
 
 actor = plotter.add_point_labels(points,labels,italic=False,font_size=10,point_color='red',point_size=1,render_points_as_spheres=True,always_visible=True,shadow=True)
-#plotter.camera_position = 'iso'
 
 plotter.enable_anti_aliasing('ssaa')
-_ = plotter.add_axes(line_width=5, labels_off=True)
-plotter.add_mesh(merged, show_edges=True, line_width=1, smooth_shading= True, show_scalar_bar=False)
+_ = plotter.add_axes(line_width=10, labels_off=True)
+plotter.add_mesh(merged, show_edges=False, line_width=1, smooth_shading= True, show_scalar_bar=False)
 plotter.show_grid()
-
 
 print('\nChoose 3D Visualization Type: \n1- Freeview \n2- Rotation GIF (This takes around 30 seconds to render)')
 userchoice = input()
