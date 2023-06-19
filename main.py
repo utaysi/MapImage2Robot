@@ -20,13 +20,11 @@ def closest_color(requested_color):
         min_colors[(rd + gd + bd)] = name
     return min_colors[min(min_colors.keys())]
 
-
-
 # Load map image
 project_folder = os.path.abspath(os.path.dirname(__file__))
 output_folder = os.path.join(project_folder, 'output_images')
 os.makedirs(output_folder, exist_ok=True)
-image_path = os.path.join(project_folder, 'maps', 'map1.png')
+image_path = os.path.join(project_folder, 'maps', 'map0.png')
 image = cv2.imread(image_path)
 
 # Convert the image to grayscale
@@ -39,9 +37,9 @@ _, binary = cv2.threshold(gray, 240, 255, cv2.THRESH_BINARY_INV)
 contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 
-# Iterate contours, append into building_info
-building_info = []
 
+building_info = []
+# Iterate contours, append into building_info
 for i in range (len(contours)-1,-1,-1):
     # Get the bounding rectangle for the contour
     x, y, w, h = cv2.boundingRect(contours[i])
@@ -51,28 +49,29 @@ for i in range (len(contours)-1,-1,-1):
     building_info.append([int(round(center_x)), int(round(center_y)), w])
 
 
-# Print the starting positions of buildings
+# Console Output for each building info
 print('-------------------------------------------------------------------------------------------------------------\n')
 print('Map Dimension: ' + str(image.shape[0]) + 'x'+ str(image.shape[1]))
 for i in range (0,len(building_info),1):
     print('--------------------')
     print('Building ' + str(i+1) + ': ')
     print('Coordinates: (' + str(int(building_info[i][0])) + ',' + str(int(building_info[i][1])) +')')
+    # ---- OCR for building heights ----
     # Crop the image to the area of the building
     cropped = image[int(building_info[i][1]-building_info[i][2]/2):int(building_info[i][1]+building_info[i][2]/2), int(building_info[i][0]-building_info[i][2]/2):int(building_info[i][0]+building_info[i][2]/2)]
-    #Recognize the text from the cropped image
+    # Recognize the text from the cropped image
     text = pytesseract.image_to_string(cropped, config='--psm 7 digits')
-    #Add found text with OCR to building_info
+    # Add found text with OCR to building_info
     try:
         building_info[i].append(int(text))
     except ValueError:
         building_info[i].append(0)
-    
     print(f"Height: {building_info[i][3]}")
-
+    # Save each cropped OCR image for debugging
     filename = os.path.join(output_folder, f'building_{i+1}.png')
     cv2.imwrite(filename, cropped)
 
+    # ---- COLOR ----
     pixel_color_BGR = (image[int(building_info[i][1]), int(building_info[i][0]-building_info[i][2]/2.5)])
     pixel_color = pixel_color_BGR[::-1] # reverse the order of channels, making it RGB
     building_info[i].append(pixel_color)
@@ -85,7 +84,6 @@ for i in building_info:
     robot_output.append((int(i[0]), int(i[1]), i[3]))
 
 # -------OUTPUT: TEXT FILE----------
-
 # open text file in write mode to clear it
 with open("output.txt", "w") as f:
     pass
@@ -97,23 +95,21 @@ with open("output.txt", "a") as f:
         # write the same data to the text file
         f.write(str_out + '\n')
 
-# -------OUTPUT: ARDUINO SERIAL CONNECTION----------
-# Remove comments when Arduino Device is connected to the PC 
-
-# # create a serial object
+# # -------OUTPUT: ARDUINO SERIAL CONNECTION----------
+# # Remove comments when Arduino Device is connected to the PC 
+# # Create a serial object
 # ser = serial.Serial('COM5', 9600) 
 # time.sleep(2)  # give the connection a second or two to establish. 
 # for building in robot_output:
-#     # convert building info to a comma-separated string
+#     # Convert building info to a comma-separated string
 #     str_out = ','.join(map(str, building))
 #     if ser.is_open:
-#         # encode the string to bytes and send it over serial
+#         # Encode the string to bytes and send it over serial
 #         ser.write((str_out + '\n').encode())
 #     else:
 #         print("Serial connection is not open!")
-# # close the serial connection
+# # Close the serial connection
 # ser.close()
-
 
 
 print('-------------------------------------------------------------------------------------------------------------\n' + str(building_info) + '\n')
@@ -121,7 +117,8 @@ print('-------------------------------------------------------------------------
 
 
 
-### PyVista 3D Visualization
+# ---- PyVista 3D Visualization ----
+# Initialize the plotter and the map mesh
 theme = pyvista.themes.DefaultTheme()
 theme.background = 'dimgrey'
 theme.color = 'plum'
@@ -131,12 +128,13 @@ theme.render_points_as_spheres = True
 plotter = pyvista.Plotter(border= True, border_width= 50, border_color= 'plum', line_smoothing= True, polygon_smoothing= True, lighting= 'light kit', theme= theme)
 map = pyvista.Plane(center=(image.shape[0]/2, image.shape[1]/2, 0), i_size=image.shape[0], j_size=image.shape[1],i_resolution=image.shape[0], j_resolution=image.shape[1])
 
-
 modelBuildings = []
 labels = []
 points = []
 counter = 0
 colors = []
+
+# Create each building and label meshes
 for pos in building_info:
     counter += 1
     x_coord = pos[1] 
@@ -145,31 +143,30 @@ for pos in building_info:
     building_width = pos[2]
     building_length = pos[2]
     
-    
+    # Building
     building = pyvista.Cylinder(radius = building_width/2, height= building_height, direction = (0,0,1), center=(x_coord,y_coord, building_height/2))
     color = pos[4]
-    normalized_color = tuple([c/255 for c in color])  # normalize color values
+    normalized_color = tuple([c/255 for c in color])  # Normalize color values
     # Add the building to the plotter with its color
     plotter.add_mesh(building, color=normalized_color, show_edges=False, line_width=1, smooth_shading= True, show_scalar_bar=False)
-    
+    # Label and Line
     label_text = f"Building {counter}: \n({int(y_coord)}, {int(x_coord)}), \nH: {pos[3]}"
     labels.append((label_text))
     points.append((x_coord-building_width/6, y_coord+building_length/6, building_height*1.5))
     line = pyvista.Line(pointa=(x_coord, y_coord, building_height), pointb=(x_coord-building_width/6, y_coord+building_length/6, building_height*1.5), resolution=1)
     plotter.add_mesh(line, show_scalar_bar=False)
 
-
-
-
+# Merge all buildings with the map
 merged = map.merge(modelBuildings)
 
+# Plotter Settings
 actor = plotter.add_point_labels(points,labels,italic=False,font_size=10,point_color='red',point_size=1,render_points_as_spheres=True,always_visible=True,shadow=True)
-
 plotter.enable_anti_aliasing('ssaa')
 _ = plotter.add_axes(line_width=10, labels_off=True)
 plotter.add_mesh(merged, show_edges=False, line_width=1, smooth_shading= True, show_scalar_bar=False)
 plotter.show_grid()
 
+# User menu
 print('\nChoose 3D Visualization Type: \n1- Freeview \n2- Rotation GIF (This takes around 30 seconds to render)')
 userchoice = input()
 if userchoice == '1':
