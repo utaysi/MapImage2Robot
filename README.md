@@ -11,9 +11,9 @@ The task of the crane robot built by the MCH sub-team is to input the result dat
 
 For more details you can check the **"3.1.5 - Implementation"** section on **page 46 of the "Project Report.pdf"** file. 
 ## How it works
-![Screenshot1](screenshots/documentation1.gif)
+![Screenshot1](screenshots/documentation1.png)
 
-![Screenshot2](screenshots/documentation2.gif)
+![Screenshot2](screenshots/documentation2.png)
 
 ## Demo Preview
 GIF Output
